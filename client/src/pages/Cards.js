@@ -106,31 +106,21 @@ const calculateInstallmentAmounts = (totalAmount, periods) => {
 const isInstallmentOrder = (order) => {
   if (!order) return false;
   const periods = Number(order.installment_periods) || 0;
-  // คำนวณจำนวนเงินงวดแรกให้ถูกต้องตามหลักบัญชี
-  const installmentAmounts = isInstallmentOrder(order)
-    ? calculateInstallmentAmounts(
-        Number(order.total_amount) || 0,
-        Number(order.installment_periods) || 0
-      )
-    : [];
-  const monthlyPayment = installmentAmounts.length > 0 
-    ? installmentAmounts[0] 
-    : Number(order.monthly_payment) || 0;
   const method = order.payment_method ? String(order.payment_method).toLowerCase() : '';
+  if (method.includes('install')) return true;
+  if (method.includes('cash')) return false;
+  if (periods > 1) return true;
+  return periods >= 1 && (Number(order.monthly_payment) || 0) > 0;
+};
 
-  if (method.includes('installment')) {
-    return true;
-  }
-
-  if (method.includes('cash')) {
-    return false;
-  }
-
-  if (periods > 1) {
-    return true;
-  }
-
-  return periods >= 1 && monthlyPayment > 0;
+const getDaysUntilDue = (date) => {
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(date);
+  due.setHours(0, 0, 0, 0);
+  const diff = due - today;
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 };
 
 export default function Cards() {
@@ -141,6 +131,7 @@ export default function Cards() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [ordersError, setOrdersError] = useState('');
   const [detailError, setDetailError] = useState('');
+  const [installmentFilter, setInstallmentFilter] = useState('all'); // all | pending | paid | overdue
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -204,6 +195,22 @@ export default function Cards() {
 
     fetchOrderDetail();
   }, [selectedOrderId]);
+
+  const filteredInstallments = React.useMemo(() => {
+    if (!orderDetail?.installments) return [];
+    return orderDetail.installments.filter((item) => {
+      if (installmentFilter === 'paid') return item.payment_status === 'paid';
+      if (installmentFilter === 'pending') return item.payment_status !== 'paid';
+      if (installmentFilter === 'overdue') {
+        const days = getDaysUntilDue(item.payment_due_date);
+        return item.payment_status !== 'paid' && days !== null && days < 0;
+      }
+      return true;
+    });
+  }, [orderDetail, installmentFilter]);
+
+  const upcomingCount = orderDetail?.installments?.filter((i) => i.payment_status !== 'paid').length || 0;
+  const paidCount = orderDetail?.installments?.filter((i) => i.payment_status === 'paid').length || 0;
 
   return (
     <div className="cards-page">
@@ -344,7 +351,7 @@ export default function Cards() {
               <div className="cards-contract__table-wrapper">
                 <div className="cards-contract__summary">
                   <Badge bg="light" text="dark">
-                    เหลืออีก {orderDetail.installments.filter((item) => item.payment_status !== 'paid').length} งวด
+                    เหลืออีก {upcomingCount} งวด • ชำระแล้ว {paidCount}
                   </Badge>
                   {(() => {
                     const summaryStatus = orderDetail.order_status;
@@ -368,6 +375,18 @@ export default function Cards() {
                     );
                   })()}
                 </div>
+                <div className="cards-contract__filters">
+                  <Form.Select
+                    value={installmentFilter}
+                    onChange={(e) => setInstallmentFilter(e.target.value)}
+                    size="sm"
+                  >
+                    <option value="all">ทุกสถานะ</option>
+                    <option value="pending">รอชำระ</option>
+                    <option value="overdue">เลยกำหนด</option>
+                    <option value="paid">ชำระแล้ว</option>
+                  </Form.Select>
+                </div>
                 <Table responsive hover className="cards-contract__table">
                   <thead>
                     <tr>
@@ -379,19 +398,36 @@ export default function Cards() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orderDetail.installments.map((item) => (
-                      <tr key={item.installment_id}>
-                        <td>{item.installment_number}</td>
-                        <td>{formatCurrency(item.installment_amount)}</td>
-                        <td>{formatDate(item.payment_due_date)}</td>
-                        <td>{formatDate(item.payment_date)}</td>
-                        <td>
-                          <Badge bg={item.payment_status === 'paid' ? 'success' : 'secondary'}>
-                            {item.payment_status === 'paid' ? 'ชำระแล้ว' : 'รอชำระ'}
-                          </Badge>
+                    {filteredInstallments.map((item) => {
+                      const days = getDaysUntilDue(item.payment_due_date);
+                      const isPaid = item.payment_status === 'paid';
+                      const isOverdue = !isPaid && days !== null && days < 0;
+                      const isDueSoon = !isPaid && days !== null && days >= 0 && days <= 3;
+                      return (
+                        <tr key={item.installment_id}>
+                          <td>{item.installment_number}</td>
+                          <td>{formatCurrency(item.installment_amount)}</td>
+                          <td>{formatDate(item.payment_due_date)}</td>
+                          <td>{formatDate(item.payment_date)}</td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2 flex-wrap">
+                              <Badge bg={isPaid ? 'success' : 'secondary'}>
+                                {isPaid ? 'ชำระแล้ว' : 'รอชำระ'}
+                              </Badge>
+                              {isOverdue && <Badge bg="danger">เลยกำหนด</Badge>}
+                              {isDueSoon && <Badge bg="warning" text="dark">ครบกำหนดใน {days} วัน</Badge>}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredInstallments.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="text-center text-muted py-3">
+                          ไม่มีงวดตามเงื่อนไขที่เลือก
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </Table>
               </div>

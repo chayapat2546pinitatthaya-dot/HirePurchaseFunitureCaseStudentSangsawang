@@ -42,7 +42,8 @@ export default function AdminCustomers({
   toggleSidebar,
   adminNotifications,
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const [customers, setCustomers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -190,11 +191,13 @@ export default function AdminCustomers({
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
       <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
       <Container className="py-5">
         <section className="admin-customers__hero">

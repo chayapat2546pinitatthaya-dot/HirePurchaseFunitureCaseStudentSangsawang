@@ -5,7 +5,8 @@ import './NotificationBell.css';
 export default function NotificationBell({
   adminNotifications = {},
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const navigate = useNavigate();
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
@@ -14,7 +15,7 @@ export default function NotificationBell({
   // คำนวณจำนวนรวมของแจ้งเตือน
   const totalNotifications = useMemo(() => {
     if (!adminNotifications) return 0;
-    return (adminNotifications.orders || 0) + (adminNotifications.customers || 0);
+    return (adminNotifications.orders || 0) + (adminNotifications.customers || 0) + (adminNotifications.payments || 0);
   }, [adminNotifications]);
 
   // ปิด dropdown เมื่อคลิกข้างนอก
@@ -68,6 +69,25 @@ export default function NotificationBell({
               {adminNotifications?.orders > 0 && (
                 <span className="admin-notification-bell__menu-item-badge">
                   {adminNotifications.orders}
+                </span>
+              )}
+            </button>
+            
+            <button
+              className="admin-notification-bell__menu-item"
+              onClick={() => {
+                if (markAdminPaymentsSeen) markAdminPaymentsSeen();
+                setShowNotificationMenu(false);
+                navigate('/admin/payment-confirmations');
+              }}
+            >
+              <div className="admin-notification-bell__menu-item-content">
+                <i className="bi bi-cash-coin"></i>
+                <span>ยืนยันการชำระเงิน</span>
+              </div>
+              {adminNotifications?.payments > 0 && (
+                <span className="admin-notification-bell__menu-item-badge">
+                  {adminNotifications.payments}
                 </span>
               )}
             </button>

@@ -47,7 +47,8 @@ export default function AdminDashboard({
   toggleSidebar,
   adminNotifications,
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -345,12 +346,14 @@ export default function AdminDashboard({
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
 
       <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
 
       <Container fluid className="admin-dashboard__container">

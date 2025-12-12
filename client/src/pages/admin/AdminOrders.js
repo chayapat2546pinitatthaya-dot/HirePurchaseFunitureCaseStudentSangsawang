@@ -40,7 +40,8 @@ export default function AdminOrders({
   toggleSidebar,
   adminNotifications,
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -686,6 +687,10 @@ export default function AdminOrders({
           onLogout={logout}
           isCollapsed={isSidebarCollapsed}
           onToggleSidebar={toggleSidebar}
+          adminNotifications={adminNotifications}
+          markAdminOrdersSeen={markAdminOrdersSeen}
+          markAdminCustomersSeen={markAdminCustomersSeen}
+          markAdminPaymentsSeen={markAdminPaymentsSeen}
         />
         <div className="admin-orders__loading">
           <Spinner animation="border" role="status" variant="primary">
@@ -707,11 +712,13 @@ export default function AdminOrders({
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
       <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
 
       <div className="admin-orders__layout">

@@ -10,7 +10,8 @@ export default function AdminHeader({
   onToggleSidebar,
   adminNotifications = {},
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const displayName = admin?.name || admin?.username || 'ผู้ดูแลระบบ';
   const email = admin?.email || '';
@@ -36,7 +37,8 @@ export default function AdminHeader({
     {
       to: '/admin/payment-confirmations',
       icon: 'bi bi-cash-coin',
-      label: 'ยืนยันการชำระเงิน'
+      label: 'ยืนยันการชำระเงิน',
+      notificationKey: 'payments'
     },
     {
       to: '/admin/products',
@@ -114,6 +116,9 @@ export default function AdminHeader({
                   }
                   if (item.notificationKey === 'customers' && typeof markAdminCustomersSeen === 'function') {
                     markAdminCustomersSeen();
+                  }
+                  if (item.notificationKey === 'payments' && typeof markAdminPaymentsSeen === 'function') {
+                    markAdminPaymentsSeen();
                   }
                 }}
               >

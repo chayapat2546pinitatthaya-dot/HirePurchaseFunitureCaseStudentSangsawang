@@ -53,7 +53,8 @@ export default function AdminPaymentConfirmation({
   toggleSidebar,
   adminNotifications,
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const navigate = useNavigate();
   const [installments, setInstallments] = useState([]);
@@ -61,11 +62,25 @@ export default function AdminPaymentConfirmation({
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [message, setMessage] = useState({ show: false, text: '', variant: '' });
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const toDateInput = (date) => date.toISOString().split('T')[0];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const defaultEnd = new Date(today);
+  defaultEnd.setDate(defaultEnd.getDate() + 5);
+  const [startDate, setStartDate] = useState(toDateInput(today));
+  const [endDate, setEndDate] = useState(toDateInput(defaultEnd));
+  const [viewMode, setViewMode] = useState('upcoming'); // 'upcoming' | 'history'
 
   const fetchUpcomingPayments = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('/api/admin/payment-confirmations');
+      const response = await axios.get('/api/admin/payment-confirmations', {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+          status: viewMode === 'history' ? 'paid' : 'pending'
+        }
+      });
       // ตรวจสอบว่า response.data เป็น array
       const data = Array.isArray(response.data) ? response.data : [];
       setInstallments(data);
@@ -82,7 +97,7 @@ export default function AdminPaymentConfirmation({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [startDate, endDate, viewMode]);
 
   useEffect(() => {
     // ตรวจสอบว่ามี token ก่อนเรียก API
@@ -215,12 +230,14 @@ export default function AdminPaymentConfirmation({
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
 
       <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
 
       <Container fluid className="admin-dashboard__container">
@@ -228,8 +245,14 @@ export default function AdminPaymentConfirmation({
         <section className="admin-dashboard__header">
           <div className="admin-dashboard__header-content">
             <div>
-              <h1 className="admin-dashboard__title">ยืนยันการชำระเงิน</h1>
-              <p className="admin-dashboard__subtitle">รายการงวดการชำระเงินที่กำลังถึงวันกำหนดภายใน 5 วัน</p>
+                <h1 className="admin-dashboard__title">
+                  {viewMode === 'history' ? 'ประวัติการชำระเงิน' : 'ยืนยันการชำระเงิน'}
+                </h1>
+                <p className="admin-dashboard__subtitle">
+                  {viewMode === 'history'
+                    ? 'ดูงวดที่บันทึกชำระเงินแล้วในช่วงวันที่ที่เลือก'
+                    : 'รายการงวดการชำระเงินที่กำลังถึงวันกำหนดภายใน 5 วัน (หรือช่วงที่เลือก)'}
+                </p>
             </div>
             <div className="admin-dashboard__header-meta">
               <span className="admin-dashboard__date">
@@ -251,6 +274,38 @@ export default function AdminPaymentConfirmation({
           </div>
 
           <div className="admin-dashboard__header-actions">
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <div className="d-flex align-items-center gap-2">
+                <label className="fw-semibold">โหมด</label>
+                <select
+                  className="form-select"
+                  value={viewMode}
+                  onChange={(e) => setViewMode(e.target.value)}
+                >
+                  <option value="upcoming">รอยืนยัน</option>
+                  <option value="history">ประวัติชำระแล้ว</option>
+                </select>
+              </div>
+              <div className="d-flex align-items-center gap-2">
+                <label className="fw-semibold">จาก</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="d-flex align-items-center gap-2">
+                <label className="fw-semibold">ถึง</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
             <Button variant="primary" className="admin-dashboard__refresh-btn" onClick={fetchUpcomingPayments}>
               <i className="bi bi-arrow-repeat"></i>
               รีเฟรชข้อมูล
@@ -273,8 +328,12 @@ export default function AdminPaymentConfirmation({
         <Card className="admin-dashboard__panel">
           <div className="admin-dashboard__panel-header">
             <div>
-              <h2>รายการที่ต้องยืนยันการชำระเงิน</h2>
-              <p>รายการงวดการชำระเงินที่กำลังถึงวันกำหนดภายใน 5 วัน ทั้งหมด {installments.length.toLocaleString('th-TH')} รายการ</p>
+              <h2>{viewMode === 'history' ? 'ประวัติการชำระเงิน' : 'รายการที่ต้องยืนยันการชำระเงิน'}</h2>
+              <p>
+                {viewMode === 'history'
+                  ? `งวดที่บันทึกชำระแล้วในช่วงวันที่ที่เลือก ทั้งหมด ${installments.length.toLocaleString('th-TH')} รายการ`
+                  : `รายการงวดการชำระเงินที่กำลังถึงวันกำหนดภายใน 5 วัน (หรือช่วงที่เลือก) ทั้งหมด ${installments.length.toLocaleString('th-TH')} รายการ`}
+              </p>
             </div>
           </div>
           <div className="admin-dashboard__panel-body">
@@ -288,9 +347,9 @@ export default function AdminPaymentConfirmation({
                     <th>เบอร์ติดต่อ</th>
                     <th>งวดที่</th>
                     <th>ยอดชำระ</th>
-                    <th>กำหนดชำระ</th>
-                    <th>เหลืออีก</th>
-                    <th className="text-end">จัดการ</th>
+                    <th>{viewMode === 'history' ? 'วันที่ชำระ' : 'กำหนดชำระ'}</th>
+                    <th>{viewMode === 'history' ? 'สถานะ' : 'เหลืออีก'}</th>
+                    <th className="text-end">{viewMode === 'history' ? 'การดำเนินการ' : 'จัดการ'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -299,11 +358,14 @@ export default function AdminPaymentConfirmation({
                       return null; // Skip invalid items
                     }
                     
-                    const daysUntilDue = getDaysUntilDue(item.payment_due_date);
+                    const daysUntilDue = viewMode === 'history' ? null : getDaysUntilDue(item.payment_due_date);
                     const customer = item.customer || {};
                     const customerName = `${customer.customer_fname || ''} ${customer.customer_lname || ''}`.trim() || 'ไม่ระบุชื่อ';
                     const orderId = item.order_id || item.order?.order_id || null;
                     const installmentId = item.installment_id;
+                    const dateDisplay = viewMode === 'history'
+                      ? formatDate(item.payment_date)
+                      : formatDate(item.payment_due_date);
                     
                     return (
                       <tr key={installmentId}>
@@ -330,28 +392,46 @@ export default function AdminPaymentConfirmation({
                         <td>{customer.customer_tel || '-'}</td>
                         <td>{item.installment_number || '-'}</td>
                         <td className="admin-dashboard__amount">{formatCurrency(item.installment_amount || 0)}</td>
-                        <td>{formatDate(item.payment_due_date)}</td>
-                        <td>{getUrgencyBadge(daysUntilDue)}</td>
+                        <td>{dateDisplay}</td>
+                        <td>
+                          {viewMode === 'history'
+                            ? <Badge bg="success">ชำระแล้ว</Badge>
+                            : getUrgencyBadge(daysUntilDue)}
+                        </td>
                         <td className="text-end">
-                          {orderId && installmentId ? (
+                          {viewMode === 'history' ? (
                             <Button
-                              variant="outline-success"
+                              variant="outline-secondary"
                               size="sm"
-                              className="admin-dashboard__action-btn admin-dashboard__action-btn--approve"
-                              title="ยืนยันการชำระเงิน"
-                              disabled={actionLoadingId === installmentId}
-                              onClick={() => handleMarkPaid(orderId, installmentId)}
+                              className="admin-dashboard__action-btn"
+                              title="ดูคำสั่งซื้อ"
+                              onClick={() => handleViewOrder(orderId)}
                             >
-                              {actionLoadingId === installmentId ? (
-                                <Spinner animation="border" size="sm" role="status">
-                                  <span className="visually-hidden">Processing...</span>
-                                </Spinner>
-                              ) : (
-                                <i className="bi bi-check-circle"></i>
-                              )}
+                              <i className="bi bi-box-arrow-up-right"></i>
                             </Button>
                           ) : (
-                            <span className="text-muted">-</span>
+                            <>
+                              {orderId && installmentId ? (
+                                <Button
+                                  variant="outline-success"
+                                  size="sm"
+                                  className="admin-dashboard__action-btn admin-dashboard__action-btn--approve"
+                                  title="ยืนยันการชำระเงิน"
+                                  disabled={actionLoadingId === installmentId}
+                                  onClick={() => handleMarkPaid(orderId, installmentId)}
+                                >
+                                  {actionLoadingId === installmentId ? (
+                                    <Spinner animation="border" size="sm" role="status">
+                                      <span className="visually-hidden">Processing...</span>
+                                    </Spinner>
+                                  ) : (
+                                    <i className="bi bi-check-circle"></i>
+                                  )}
+                                </Button>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </>
                           )}
                         </td>
                       </tr>
@@ -362,8 +442,12 @@ export default function AdminPaymentConfirmation({
             ) : (
               <div className="admin-dashboard__empty-state">
                 <i className="bi bi-check-circle"></i>
-                <strong>ไม่มีรายการที่ต้องยืนยัน</strong>
-                <p>ไม่มีงวดการชำระเงินที่กำลังถึงวันกำหนดภายใน 5 วัน</p>
+                <strong>{viewMode === 'history' ? 'ไม่มีประวัติการชำระเงินในช่วงนี้' : 'ไม่มีรายการที่ต้องยืนยัน'}</strong>
+                <p>
+                  {viewMode === 'history'
+                    ? 'ไม่มีงวดที่ถูกบันทึกว่าชำระแล้วในช่วงวันที่ที่เลือก'
+                    : 'ไม่มีงวดการชำระเงินที่กำลังถึงวันกำหนดในช่วงวันที่ที่เลือก'}
+                </p>
               </div>
             )}
           </div>

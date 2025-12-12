@@ -118,7 +118,8 @@ export default function AdminCustomerDetail({
   toggleSidebar,
   adminNotifications = {},
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const { customerId } = useParams();
   const [data, setData] = useState(null);
@@ -382,11 +383,16 @@ export default function AdminCustomerDetail({
         onLogout={logout}
         isCollapsed={isSidebarCollapsed}
         onToggleSidebar={toggleSidebar}
+        adminNotifications={adminNotifications}
+        markAdminOrdersSeen={markAdminOrdersSeen}
+        markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
       <NotificationBell
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
       <Container className="py-5">
         <div className="detail-topbar mb-4">

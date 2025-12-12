@@ -38,7 +38,8 @@ function AppContent({
   toggleSidebar,
   adminNotifications,
   markAdminOrdersSeen,
-  markAdminCustomersSeen
+  markAdminCustomersSeen,
+  markAdminPaymentsSeen
 }) {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -115,6 +116,7 @@ function AppContent({
                   adminNotifications={adminNotifications}
                   markAdminOrdersSeen={markAdminOrdersSeen}
                   markAdminCustomersSeen={markAdminCustomersSeen}
+                  markAdminPaymentsSeen={markAdminPaymentsSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -133,6 +135,7 @@ function AppContent({
                   adminNotifications={adminNotifications}
                   markAdminOrdersSeen={markAdminOrdersSeen}
                   markAdminCustomersSeen={markAdminCustomersSeen}
+                  markAdminPaymentsSeen={markAdminPaymentsSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -151,6 +154,7 @@ function AppContent({
                   adminNotifications={adminNotifications}
                   markAdminOrdersSeen={markAdminOrdersSeen}
                   markAdminCustomersSeen={markAdminCustomersSeen}
+                  markAdminPaymentsSeen={markAdminPaymentsSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -169,6 +173,7 @@ function AppContent({
                   adminNotifications={adminNotifications}
                   markAdminOrdersSeen={markAdminOrdersSeen}
                   markAdminCustomersSeen={markAdminCustomersSeen}
+                  markAdminPaymentsSeen={markAdminPaymentsSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -187,6 +192,7 @@ function AppContent({
                   adminNotifications={adminNotifications}
                   markAdminOrdersSeen={markAdminOrdersSeen}
                   markAdminCustomersSeen={markAdminCustomersSeen}
+                  markAdminPaymentsSeen={markAdminPaymentsSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -205,6 +211,7 @@ function AppContent({
                   adminNotifications={adminNotifications}
                   markAdminOrdersSeen={markAdminOrdersSeen}
                   markAdminCustomersSeen={markAdminCustomersSeen}
+                  markAdminPaymentsSeen={markAdminPaymentsSeen}
                 />
               ) : (
                 <Navigate to="/admin/login" />
@@ -232,13 +239,15 @@ function App() {
   });
   const [adminNotifications, setAdminNotifications] = useState(() => {
     if (typeof window === 'undefined') {
-      return { orders: 0, customers: 0, latestOrderId: 0, latestCustomerId: 0 };
+      return { orders: 0, customers: 0, payments: 0, latestOrderId: 0, latestCustomerId: 0, latestPaymentId: 0 };
     }
     return {
       orders: 0,
       customers: 0,
+      payments: 0,
       latestOrderId: Number(localStorage.getItem('admin_latest_order_id') || 0),
-      latestCustomerId: Number(localStorage.getItem('admin_latest_customer_id') || 0)
+      latestCustomerId: Number(localStorage.getItem('admin_latest_customer_id') || 0),
+      latestPaymentId: Number(localStorage.getItem('admin_latest_payment_id') || 0)
     };
   });
   const notificationsPollRef = React.useRef(null);
@@ -278,20 +287,24 @@ function App() {
     const fetchNotifications = async () => {
       try {
         const response = await axios.get('/api/admin/notification-summary');
-        const { latestOrderId = 0, latestCustomerId = 0 } = response.data || {};
+        const { latestOrderId = 0, latestCustomerId = 0, latestPaymentId = 0 } = response.data || {};
 
         setAdminNotifications((prev) => {
           const lastSeenOrderId = Number(localStorage.getItem('admin_last_seen_order_id') || 0);
           const lastSeenCustomerId = Number(localStorage.getItem('admin_last_seen_customer_id') || 0);
+          const lastSeenPaymentId = Number(localStorage.getItem('admin_last_seen_payment_id') || 0);
 
           const newOrders = Math.max(0, latestOrderId - lastSeenOrderId);
           const newCustomers = Math.max(0, latestCustomerId - lastSeenCustomerId);
+          const newPayments = Math.max(0, latestPaymentId - lastSeenPaymentId);
 
           return {
             orders: newOrders,
             customers: newCustomers,
+            payments: newPayments,
             latestOrderId,
-            latestCustomerId
+            latestCustomerId,
+            latestPaymentId
           };
         });
       } catch (error) {
@@ -374,6 +387,17 @@ function App() {
     });
   };
 
+  const markAdminPaymentsSeen = () => {
+    setAdminNotifications((prev) => {
+      const latestId = prev.latestPaymentId || 0;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_last_seen_payment_id', String(latestId));
+        localStorage.setItem('admin_latest_payment_id', String(latestId));
+      }
+      return { ...prev, payments: 0 };
+    });
+  };
+
   const toggleSidebar = () => {
     setIsAdminSidebarCollapsed((prev) => !prev);
   };
@@ -404,6 +428,7 @@ function App() {
         adminNotifications={adminNotifications}
         markAdminOrdersSeen={markAdminOrdersSeen}
         markAdminCustomersSeen={markAdminCustomersSeen}
+        markAdminPaymentsSeen={markAdminPaymentsSeen}
       />
     </Router>
   );
