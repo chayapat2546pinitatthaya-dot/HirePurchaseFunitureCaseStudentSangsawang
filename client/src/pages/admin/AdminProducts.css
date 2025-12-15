@@ -654,12 +654,130 @@
     padding: 96px 18px 120px 18px;
   }
 
-  .admin-products-table {
+  .admin-products-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .admin-products-topbar__title h2 {
+    font-size: 1.5rem;
+  }
+
+  .admin-products-toolbar {
+    padding: 14px 18px;
+  }
+
+  .admin-products-toolbar__search input {
+    padding: 10px 44px 10px 44px;
     font-size: 0.9rem;
+  }
+
+  .admin-products-toolbar__filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-products-toolbar__filter {
+    width: 100%;
+  }
+
+  .admin-products-table {
+    font-size: 0.85rem;
   }
 
   .admin-products-table th,
   .admin-products-table td {
-    padding: 12px 8px;
+    padding: 10px 6px;
+  }
+
+  .admin-products-table th {
+    font-size: 0.75rem;
+  }
+
+  .admin-products-card {
+    padding: 16px;
+  }
+
+  .admin-products-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .admin-products-card__header h3 {
+    font-size: 1.1rem;
+  }
+
+  .admin-products-drawer__content {
+    padding: 20px;
+  }
+
+  .admin-products-drawer__header h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-products-page {
+    padding: 96px 16px 120px 16px;
+  }
+
+  .admin-products-topbar {
+    padding: 16px;
+  }
+
+  .admin-products-topbar__title h2 {
+    font-size: 1.3rem;
+  }
+
+  .admin-products-topbar__title p {
+    font-size: 0.85rem;
+  }
+
+  .admin-products-toolbar {
+    padding: 12px 16px;
+  }
+
+  .admin-products-toolbar__search input {
+    padding: 8px 40px 8px 40px;
+    font-size: 0.85rem;
+  }
+
+  .admin-products-table {
+    font-size: 0.8rem;
+  }
+
+  .admin-products-table th,
+  .admin-products-table td {
+    padding: 8px 4px;
+  }
+
+  .admin-products-table th {
+    font-size: 0.7rem;
+  }
+
+  .admin-products-card {
+    padding: 14px;
+  }
+
+  .admin-products-card__header h3 {
+    font-size: 1rem;
+  }
+
+  .admin-products-drawer__content {
+    padding: 16px;
+  }
+
+  .admin-products-drawer__header {
+    padding: 16px;
+  }
+
+  .admin-products-drawer__header h3 {
+    font-size: 1.1rem;
+  }
+
+  .admin-products-drawer__body {
+    padding: 16px;
   }
 }

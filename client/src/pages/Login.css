@@ -377,21 +377,99 @@
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
+  .login-showcase-content {
+    padding: 32px 24px;
+  }
+
+  .login-showcase-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .login-showcase-content p {
+    font-size: 1.1rem;
+  }
+
+  .login-showcase-meta div {
+    font-size: 1.1rem;
+  }
+
+  .login-form-area {
+    padding: 24px 20px 40px;
+  }
+
   .login-form-shell {
-    gap: 20px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-showcase {
+    min-height: 280px;
+  }
+
+  .login-showcase-content {
+    padding: 24px 20px;
+  }
+
+  .login-showcase-content h1 {
+    font-size: 1.6rem;
+  }
+
+  .login-showcase-content p {
+    font-size: 1rem;
+  }
+
+  .login-badge {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  .login-showcase-meta div {
+    font-size: 1rem;
+  }
+
+  .login-showcase-meta i {
+    font-size: 1.1rem;
+  }
+
+  .login-form-area {
+    padding: 20px 16px 32px;
+  }
+
+  .login-form-shell {
+    gap: 18px;
   }
 
   .login-card {
-    padding: 28px 22px;
+    padding: 24px 20px;
+  }
+
+  .login-brand-icons {
+    gap: 12px;
+  }
+
+  .login-brand-icons img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .login-form-title {
+    font-size: 1.5rem;
+  }
+
+  .login-form-subtitle {
+    font-size: 0.9rem;
   }
 
   .login-secondary-actions {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .login-meta-links {
     gap: 8px;
+    font-size: 0.9rem;
   }
 }
 

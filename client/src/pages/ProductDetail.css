@@ -508,23 +508,144 @@
 }
 
 @media (max-width: 992px) {
+  .product-detail-page {
+    padding: 24px 0 32px;
+  }
+
   .detail-wrapper {
     grid-template-columns: 1fr;
     gap: 20px;
   }
 
   .gallery-main {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 3;
+    max-height: 500px;
+  }
+
+  .detail-content {
+    padding: 20px;
+  }
+
+  .detail-content h1 {
+    font-size: 1.75rem;
   }
 
   .detail-price-box {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+    padding: 16px 20px;
+  }
+
+  .pricing-cards {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-detail-page {
+    padding: 20px 0 28px;
+  }
+
+  .detail-gallery {
+    padding: 14px;
+  }
+
+  .gallery-main {
+    aspect-ratio: 1 / 1;
+    max-height: 400px;
+  }
+
+  .gallery-thumbs {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 8px;
+  }
+
+  .detail-content {
+    padding: 18px;
+  }
+
+  .detail-content h1 {
+    font-size: 1.5rem;
+  }
+
+  .detail-description {
+    font-size: 0.95rem;
+  }
+
+  .detail-price-box h2 {
+    font-size: 1.5rem;
+  }
+
+  .pricing-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-card {
+    padding: 16px;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
+
+  .detail-actions .btn-primary-custom,
+  .detail-actions .buy-now-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 576px) {
+  .product-detail-page {
+    padding: 16px 0 24px;
+  }
+
+  .detail-gallery {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .gallery-main {
+    border-radius: 12px;
+    max-height: 350px;
+  }
+
+  .gallery-thumbs {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .detail-content {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .detail-content h1 {
+    font-size: 1.3rem;
+  }
+
+  .detail-description {
+    font-size: 0.9rem;
+  }
+
+  .detail-price-box {
+    padding: 14px 16px;
+    border-radius: 16px;
+  }
+
+  .detail-price-box h2 {
+    font-size: 1.3rem;
+  }
+
+  .pricing-card {
+    padding: 14px;
+  }
+
+  .pricing-card__value {
+    font-size: 1.3rem;
+  }
+
   .pricing-option {
     flex-direction: column;
     align-items: flex-start;
@@ -532,5 +653,42 @@
 
   .pricing-amount {
     font-size: 1.1rem;
+  }
+
+  .detail-tags {
+    gap: 6px;
+  }
+
+  .tag-badge {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .detail-list h3 {
+    font-size: 1rem;
+  }
+
+  .detail-list li {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .login-overlay .overlay-card {
+    width: 95%;
+    padding: 24px 20px;
+  }
+
+  .login-overlay .overlay-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .login-overlay h3 {
+    font-size: 1.1rem;
+  }
+
+  .login-overlay p {
+    font-size: 0.9rem;
   }
 }

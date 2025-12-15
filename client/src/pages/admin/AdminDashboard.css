@@ -773,29 +773,293 @@
     padding: 96px 18px 120px 18px;
   }
 
+  .admin-dashboard__header {
+    margin-bottom: 24px;
+  }
+
+  .admin-dashboard__title {
+    font-size: 1.6rem;
+  }
+
+  .admin-dashboard__subtitle {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__kpi {
+    margin-bottom: 24px;
+  }
+
   .admin-dashboard__kpi-card {
     flex-direction: column;
     text-align: center;
+    padding: 16px;
+  }
+
+  .admin-dashboard__kpi-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+  }
+
+  .admin-dashboard__kpi-value {
+    font-size: 1.3rem;
+  }
+
+  .admin-dashboard__panel {
+    border-radius: 10px;
   }
 
   .admin-dashboard__panel-header {
     flex-direction: column;
     align-items: flex-start;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .admin-dashboard__panel-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .admin-dashboard__panel-body {
+    padding: 18px;
+  }
+
+  .admin-dashboard__table {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__table thead th {
+    padding: 10px 8px;
+    font-size: 0.7rem;
+  }
+
+  .admin-dashboard__table tbody td {
+    padding: 12px 8px;
+  }
+
+  .admin-dashboard__action-btn {
+    min-width: 32px;
+    height: 30px;
+    font-size: 0.85rem;
+    padding: 4px 8px;
   }
 
   .admin-dashboard__slide-panel {
     width: 100%;
     right: -100%;
   }
+
+  .admin-dashboard__slide-panel-header {
+    padding: 18px;
+  }
+
+  .admin-dashboard__slide-panel-header h3 {
+    font-size: 1.15rem;
+  }
+
+  .admin-dashboard__slide-panel-body {
+    padding: 18px;
+  }
+
+  .admin-dashboard__detail-section {
+    margin-bottom: 24px;
+  }
+
+  .admin-dashboard__detail-section h4 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .admin-dashboard__detail-content {
+    padding: 16px;
+  }
+
+  .admin-dashboard__detail-row {
+    padding: 10px 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .admin-dashboard__detail-item {
+    padding: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .admin-dashboard__detail-item-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 576px) {
+  .admin-dashboard {
+    padding: 96px 16px 120px 16px;
+  }
+
+  .admin-dashboard__header-content {
+    gap: 16px;
+  }
+
+  .admin-dashboard__title {
+    font-size: 1.4rem;
+  }
+
+  .admin-dashboard__subtitle {
+    font-size: 0.85rem;
+  }
+
+  .admin-dashboard__header-meta {
+    font-size: 0.85rem;
+  }
+
   .admin-dashboard__header-actions {
     flex-direction: column;
+    width: 100%;
+    gap: 10px;
   }
 
   .admin-dashboard__quick-search,
   .admin-dashboard__refresh-btn {
     width: 100%;
+  }
+
+  .admin-dashboard__quick-search input {
+    padding: 10px 14px 10px 40px;
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__refresh-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__kpi-card {
+    padding: 14px;
+  }
+
+  .admin-dashboard__kpi-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .admin-dashboard__kpi-label {
+    font-size: 0.8rem;
+  }
+
+  .admin-dashboard__kpi-value {
+    font-size: 1.2rem;
+  }
+
+  .admin-dashboard__panel-header {
+    padding: 16px;
+  }
+
+  .admin-dashboard__panel-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .admin-dashboard__panel-body {
+    padding: 16px;
+  }
+
+  .admin-dashboard__table {
+    font-size: 0.85rem;
+  }
+
+  .admin-dashboard__table thead th {
+    padding: 8px 6px;
+    font-size: 0.65rem;
+  }
+
+  .admin-dashboard__table tbody td {
+    padding: 10px 6px;
+  }
+
+  .admin-dashboard__customer-info strong {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__customer-info span {
+    font-size: 0.8rem;
+  }
+
+  .admin-dashboard__amount {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__action-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+  }
+
+  .admin-dashboard__quick-action-card {
+    padding: 14px 16px;
+  }
+
+  .admin-dashboard__quick-action-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .admin-dashboard__quick-action-label {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__slide-panel-header {
+    padding: 16px;
+  }
+
+  .admin-dashboard__slide-panel-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .admin-dashboard__slide-panel-body {
+    padding: 16px;
+  }
+
+  .admin-dashboard__detail-content {
+    padding: 14px;
+  }
+
+  .admin-dashboard__detail-row {
+    padding: 8px 0;
+    font-size: 0.85rem;
+  }
+
+  .admin-dashboard__detail-total {
+    font-size: 1.1rem;
+  }
+
+  .admin-dashboard__detail-item {
+    padding: 10px;
+  }
+
+  .admin-dashboard__detail-item-name {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard__detail-item-meta span {
+    font-size: 0.85rem;
+  }
+
+  .admin-dashboard__detail-item-meta strong {
+    font-size: 1rem;
+  }
+
+  .admin-dashboard__detail-actions {
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+
+  .admin-dashboard__detail-actions .btn {
+    padding: 10px;
+    font-size: 0.9rem;
   }
 }
