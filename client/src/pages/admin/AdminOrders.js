@@ -468,6 +468,76 @@ export default function AdminOrders({
     [orders]
   );
 
+  // คำนวณยอดขายต่อปี (กรองตามปีที่เลือก และนับเฉพาะออเดอร์ที่ส่งมอบสำเร็จแล้ว)
+  const yearlyRevenue = useMemo(() => {
+    if (!selectedYear) {
+      // ถ้าไม่ได้เลือกปี ให้แสดงยอดรวมทั้งหมดที่ส่งมอบสำเร็จแล้ว
+      return orders.reduce((sum, order) => {
+        // นับเฉพาะออเดอร์ที่มีสถานะ completed เท่านั้น
+        if (order.order_status !== 'completed') {
+          return sum;
+        }
+        
+        const paymentMethod = (order.payment_method || '').toLowerCase();
+        const isInstallment = paymentMethod.includes('install');
+        
+        if (isInstallment) {
+          // สำหรับออเดอร์ผ่อนชำระ: นับยอดที่ admin ยืนยันการชำระเงินแล้ว + ยอดจ่ายเดือนแรกเมื่อส่งมอบสำเร็จ
+          const installments = order.installments || [];
+          const paidAmount = installments
+            .filter((inst) => inst.payment_status === 'paid')
+            .reduce((total, inst) => total + Number(inst.installment_amount || 0), 0);
+          
+          // นับยอดจ่ายเดือนแรก (installment_number === 1) เมื่อส่งมอบสำเร็จแล้ว แม้ยังไม่ได้ชำระเงิน
+          const firstInstallment = installments.find((inst) => inst.installment_number === 1);
+          const firstInstallmentAmount = firstInstallment && firstInstallment.payment_status !== 'paid' 
+            ? Number(firstInstallment.installment_amount || 0) 
+            : 0;
+          
+          return sum + paidAmount + firstInstallmentAmount;
+        } else {
+          // สำหรับออเดอร์ชำระเต็มจำนวน: นับเมื่อส่งมอบสำเร็จแล้ว
+          return sum + Number(order.total_amount || 0);
+        }
+      }, 0);
+    }
+    
+    return orders.reduce((sum, order) => {
+      // นับเฉพาะออเดอร์ที่มีสถานะ completed เท่านั้น
+      if (order.order_status !== 'completed') {
+        return sum;
+      }
+      
+      const orderDate = new Date(order.order_date);
+      const orderYear = orderDate.getFullYear();
+      if (orderYear !== selectedYear) {
+        return sum;
+      }
+      
+      const paymentMethod = (order.payment_method || '').toLowerCase();
+      const isInstallment = paymentMethod.includes('install');
+      
+      if (isInstallment) {
+        // สำหรับออเดอร์ผ่อนชำระ: นับยอดที่ admin ยืนยันการชำระเงินแล้ว + ยอดจ่ายเดือนแรกเมื่อส่งมอบสำเร็จ
+        const installments = order.installments || [];
+        const paidAmount = installments
+          .filter((inst) => inst.payment_status === 'paid')
+          .reduce((total, inst) => total + Number(inst.installment_amount || 0), 0);
+        
+        // นับยอดจ่ายเดือนแรก (installment_number === 1) เมื่อส่งมอบสำเร็จแล้ว แม้ยังไม่ได้ชำระเงิน
+        const firstInstallment = installments.find((inst) => inst.installment_number === 1);
+        const firstInstallmentAmount = firstInstallment && firstInstallment.payment_status !== 'paid' 
+          ? Number(firstInstallment.installment_amount || 0) 
+          : 0;
+        
+        return sum + paidAmount + firstInstallmentAmount;
+      } else {
+        // สำหรับออเดอร์ชำระเต็มจำนวน: นับเมื่อส่งมอบสำเร็จแล้ว
+        return sum + Number(order.total_amount || 0);
+      }
+    }, 0);
+  }, [orders, selectedYear]);
+
   // กรองข้อมูลสำหรับนับจำนวน (ไม่กรองตาม statusFilter)
   const ordersForCount = useMemo(() => {
     let result = orders;
@@ -567,11 +637,37 @@ export default function AdminOrders({
     return baseCounts;
   }, [ordersForCount, statusFilterOptions]);
 
-  // คำนวณยอดขายต่อเดือน (จาก ordersForCount ที่กรองตามเดือนและปีแล้ว)
-  const monthlyRevenue = useMemo(
-    () => ordersForCount.reduce((sum, order) => sum + Number(order.total_amount || 0), 0),
-    [ordersForCount]
-  );
+  // คำนวณยอดขายต่อเดือน (จาก ordersForCount ที่กรองตามเดือนและปีแล้ว และนับเฉพาะออเดอร์ที่ส่งมอบสำเร็จแล้ว)
+  const monthlyRevenue = useMemo(() => {
+    return ordersForCount.reduce((sum, order) => {
+      // นับเฉพาะออเดอร์ที่มีสถานะ completed เท่านั้น
+      if (order.order_status !== 'completed') {
+        return sum;
+      }
+      
+      const paymentMethod = (order.payment_method || '').toLowerCase();
+      const isInstallment = paymentMethod.includes('install');
+      
+      if (isInstallment) {
+        // สำหรับออเดอร์ผ่อนชำระ: นับยอดที่ admin ยืนยันการชำระเงินแล้ว + ยอดจ่ายเดือนแรกเมื่อส่งมอบสำเร็จ
+        const installments = order.installments || [];
+        const paidAmount = installments
+          .filter((inst) => inst.payment_status === 'paid')
+          .reduce((total, inst) => total + Number(inst.installment_amount || 0), 0);
+        
+        // นับยอดจ่ายเดือนแรก (installment_number === 1) เมื่อส่งมอบสำเร็จแล้ว แม้ยังไม่ได้ชำระเงิน
+        const firstInstallment = installments.find((inst) => inst.installment_number === 1);
+        const firstInstallmentAmount = firstInstallment && firstInstallment.payment_status !== 'paid' 
+          ? Number(firstInstallment.installment_amount || 0) 
+          : 0;
+        
+        return sum + paidAmount + firstInstallmentAmount;
+      } else {
+        // สำหรับออเดอร์ชำระเต็มจำนวน: นับเมื่อส่งมอบสำเร็จแล้ว
+        return sum + Number(order.total_amount || 0);
+      }
+    }, 0);
+  }, [ordersForCount]);
 
   // คำนวณรายได้ต่องวดรวม (เฉพาะออเดอร์ที่มีการผ่อน)
   const totalInstallmentRevenue = useMemo(
@@ -807,8 +903,8 @@ export default function AdminOrders({
               </button>
             ))}
             <div className="admin-orders__status-total">
-              <span>ยอดขายรวม</span>
-              <strong>{formatCurrency(totalRevenue)}</strong>
+              <span>ยอดขายต่อปี</span>
+              <strong>{formatCurrency(yearlyRevenue)}</strong>
             </div>
             <div className="admin-orders__status-total" style={{ marginLeft: '16px' }}>
               <span>ยอดขายต่อเดือน</span>

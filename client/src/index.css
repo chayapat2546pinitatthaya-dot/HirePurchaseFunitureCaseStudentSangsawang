@@ -2,14 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --color-background: #f6f1e6;
+  /* เปลี่ยนพื้นหลังหลักจากสีครีมเป็นสีขาว */
+  --color-background: #ffffff;
   --color-surface: #ffffff;
   --color-surface-muted: #f9f3ea;
   --color-primary: #b7895b;
   --color-primary-dark: #916c47;
   --color-accent: #cf9356;
-  --color-text: #3a2f27;
-  --color-text-muted: #796b60;
+  /* ใช้ตัวอักษรสีดำและเทาเข้มให้อ่านชัดบนพื้นหลังอ่อน */
+  --color-text: #000000;
+  --color-text-muted: #555555;
   --radius-lg: 18px;
   --radius-md: 14px;
   --radius-sm: 10px;

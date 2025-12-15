@@ -16,6 +16,7 @@ import OrderDetail from './pages/OrderDetail';
 import Cards from './pages/Cards';
 import VerifyEmail from './pages/VerifyEmail';
 import AdminLogin from './pages/admin/AdminLogin';
+import AdminRegister from './pages/admin/AdminRegister';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
@@ -96,6 +97,7 @@ function AppContent({
           <Route path="/forgot-password" element={!user ? <ForgotPassword /> : <Navigate to="/" />} />
           <Route path="/reset-password" element={!user ? <ResetPassword /> : <Navigate to="/" />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
           <Route path="/orders" element={user ? <Orders /> : <Navigate to="/login" />} />
           <Route path="/orders/:orderId" element={user ? <OrderDetail /> : <Navigate to="/login" />} />

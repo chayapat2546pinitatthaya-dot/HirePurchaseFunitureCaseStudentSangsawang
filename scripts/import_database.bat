@@ -4,7 +4,10 @@ echo.
 
 REM Path to MySQL in XAMPP (adjust if your XAMPP is in different location)
 set MYSQL_PATH=C:\xampp\mysql\bin\mysql.exe
-set SQL_FILE=c:\Users\chaya\Documents\sangsawang_furniture.sql
+
+REM Get the directory where this script is located and use relative path
+set SCRIPT_DIR=%~dp0
+set SQL_FILE=%SCRIPT_DIR%..\database\sangsawang_furniture.sql
 
 REM Check if MySQL exists
 if not exist "%MYSQL_PATH%" (

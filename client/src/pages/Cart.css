@@ -712,13 +712,17 @@
 .empty-cart h2 {
   margin: 0;
   font-size: 1.8rem;
-  color: var(--color-primary-dark);
+  color: #000000;
 }
 
 .empty-cart p {
   margin: 0;
-  color: var(--color-muted);
+  color: #000000;
   line-height: 1.6;
+}
+
+.empty-cart p strong {
+  color: #000000;
 }
 
 .empty-cart.success .empty-icon {

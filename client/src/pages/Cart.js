@@ -849,14 +849,42 @@ const shouldShowBasePrice = (item) => {
                 คำสั่งซื้อเลขที่ #{orderResult.orderId || '-'} อยู่ในสถานะ <strong>รออนุมัติ</strong>
                 <br />
                 {orderResult.shippingAddress && (
-                   <span>
+                  <span>
                     ที่อยู่จัดส่ง:
                     <strong>
                       <br />
-                      {formatShippingPreview(normalizeShippingEntry(orderResult.shippingAddress))}
+                      {formatShippingPreview(
+                        normalizeShippingEntry(orderResult.shippingAddress)
+                      )}
                     </strong>
                     <br />
                   </span>
+                )}
+                {/* แสดงยอดชำระของคำสั่งซื้อ */}
+                {orderResult.paymentMethod === 'installment' ? (
+                  <>
+                    ยอดรวมทั้งสิ้น{' '}
+                    <strong>
+                      ฿{Math.round(orderResult.total || 0).toLocaleString()}
+                    </strong>{' '}
+                    (ผ่อน {orderResult.periods || 1} งวด งวดละประมาณ{' '}
+                    <strong>
+                      ฿
+                      {Math.round(
+                        (orderResult.total || 0) / (orderResult.periods || 1)
+                      ).toLocaleString()}
+                    </strong>
+                    )
+                    <br />
+                  </>
+                ) : (
+                  <>
+                    ยอดชำระทั้งหมด{' '}
+                    <strong>
+                      ฿{Math.round(orderResult.total || 0).toLocaleString()}
+                    </strong>
+                    <br />
+                  </>
                 )}
                 คุณสามารถติดตามความคืบหน้าได้ที่เมนู "คำสั่งซื้อ" และทีมงานจะติดต่อกลับทันทีเมื่อดำเนินการเสร็จสิ้น
               </p>

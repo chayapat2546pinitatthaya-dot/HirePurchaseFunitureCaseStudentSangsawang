@@ -2,7 +2,7 @@
   "name": "sangsawang-furniture",
   "version": "1.0.0",
   "description": "Website for Sangsawang Furniture with installment payment system",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
     "dev": "kill-port 7100 3001 && concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon src/server.js",
@@ -25,6 +25,19 @@
     "kill-port": "^2.0.1",
     "nodemon": "^3.0.1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Sangsawang Furniture",
+  "license": "MIT",
+  "keywords": [
+    "furniture",
+    "ecommerce",
+    "installment",
+    "react",
+    "nodejs",
+    "express",
+    "mysql"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/sangsawang-furniture.git"
+  }
 }

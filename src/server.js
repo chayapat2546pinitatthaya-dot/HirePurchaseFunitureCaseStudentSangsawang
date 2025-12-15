@@ -9,8 +9,22 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-// Load .env file from project root
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+// Load config.json from project root
+let config = {};
+try {
+    const configPath = path.join(__dirname, '..', 'config.json');
+    const configFile = fs.readFileSync(configPath, 'utf8');
+    config = JSON.parse(configFile);
+} catch (error) {
+    console.warn('Warning: Could not load config.json, using default values:', error.message);
+    config = {
+        database: { host: 'localhost', user: 'root', password: '', database: 'sangsawang_furniture' },
+        jwt: { secret: 'sangsawang-furniture-jwt-secret-key-change-in-production' },
+        server: { port: 7100 },
+        smtp: { host: '', port: 587, user: '', password: '', secure: false, from: '' },
+        app: { baseUrl: 'http://localhost:3001', emailVerificationTtlMinutes: 15, emailOtpLength: 6 }
+    };
+}
 
 const app = express();
 
@@ -92,9 +106,10 @@ const upload = multer({
 });
 
 // Serve static files from images folder
+// หมายเหตุ: server.js อยู่ในโฟลเดอร์ src ดังนั้นต้องถอยขึ้นไปหนึ่งระดับถึงจะเจอโฟลเดอร์ images จริง
 // รูปภาพจะถูกดึงจากโฟลเดอร์ images โดยตรงผ่าน static file serving (ไม่ผ่าน API endpoint)
 // Browser จะ encode URL ที่มีภาษาไทยอัตโนมัติ และ Express จะ decode ให้อัตโนมัติ
-app.use('/images', express.static(path.join(__dirname, 'images'), {
+app.use('/images', express.static(path.join(__dirname, '..', 'images'), {
     setHeaders: (res, filePath) => {
         // ตั้งค่า headers สำหรับรูปภาพ
         if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
@@ -110,7 +125,7 @@ app.use('/images', express.static(path.join(__dirname, 'images'), {
         res.setHeader('Cache-Control', 'public, max-age=31536000');
     }
 }));
-app.use('/imgesfurniture', express.static(path.join(__dirname, 'imgesfurniture'), {
+app.use('/imgesfurniture', express.static(path.join(__dirname, '..', 'imgesfurniture'), {
     setHeaders: (res, filePath) => {
         // ตั้งค่า headers สำหรับรูปภาพ
         if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
@@ -134,10 +149,10 @@ let pool;
 const initDbConnection = async () => {
   try {
     pool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || '',
-      database: process.env.DB_NAME || 'sangsawang_furniture',
+      host: config.database?.host || 'localhost',
+      user: config.database?.user || 'root',
+      password: config.database?.password || '',
+      database: config.database?.database || 'sangsawang_furniture',
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0
@@ -158,7 +173,7 @@ const initDbConnection = async () => {
     console.error('Please check:');
     console.error('1. MySQL/XAMPP is running');
     console.error('2. Database "sangsawang_furniture" exists');
-    console.error('3. Database credentials in .env file are correct');
+    console.error('3. Database credentials in config.json file are correct');
     return false;
   }
 };
@@ -174,7 +189,7 @@ const testDatabaseConnection = async () => {
         console.error('Please check:');
         console.error('1. MySQL/XAMPP is running');
         console.error('2. Database "sangsawang_furniture" exists');
-        console.error('3. Database credentials in .env file are correct');
+        console.error('3. Database credentials in config.json file are correct');
         return false;
     }
 };
@@ -285,15 +300,15 @@ initializeDatabase();
 let mailTransporter = null;
 let mailFromAddress = null;
 
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const smtpSecure = process.env.SMTP_SECURE === 'true';
-const smtpFrom = process.env.EMAIL_FROM;
-const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:3001';
-const EMAIL_VERIFICATION_TTL_MINUTES = Number(process.env.EMAIL_VERIFICATION_TTL_MINUTES || 15);
-const EMAIL_OTP_LENGTH = Number(process.env.EMAIL_OTP_LENGTH || 6);
+const smtpHost = config.smtp?.host || '';
+const smtpPort = config.smtp?.port ? Number(config.smtp.port) : 587;
+const smtpUser = config.smtp?.user || '';
+const smtpPass = config.smtp?.password || '';
+const smtpSecure = config.smtp?.secure === true;
+const smtpFrom = config.smtp?.from || '';
+const appBaseUrl = config.app?.baseUrl || 'http://localhost:3001';
+const EMAIL_VERIFICATION_TTL_MINUTES = Number(config.app?.emailVerificationTtlMinutes || 15);
+const EMAIL_OTP_LENGTH = Number(config.app?.emailOtpLength || 6);
 
 if (smtpHost && smtpUser && smtpPass) {
     try {
@@ -912,7 +927,7 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+    jwt.verify(token, config.jwt?.secret || 'your-secret-key', (err, user) => {
         if (err) {
             return res.status(403).json({ error: 'Invalid token.' });
         }
@@ -1002,7 +1017,7 @@ app.post('/api/customer/login', async (req, res) => {
 
         const token = jwt.sign(
             { id: user.customer_id, username: user.customer_username, role: 'customer' },
-            process.env.JWT_SECRET || 'your-secret-key',
+            config.jwt?.secret || 'your-secret-key',
             { expiresIn: '24h' }
         );
 
@@ -1595,7 +1610,7 @@ app.post('/api/admin/login', async (req, res) => {
 
         const token = jwt.sign(
             { id: admin.admin_id, username: admin.admin_username, role: 'admin' },
-            process.env.JWT_SECRET || 'your-secret-key',
+            config.jwt?.secret || 'your-secret-key',
             { expiresIn: '24h' }
         );
 
@@ -1612,6 +1627,39 @@ app.post('/api/admin/login', async (req, res) => {
     } catch (error) {
         console.error('Admin login error:', error);
         res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// Admin Register
+app.post('/api/admin/register', async (req, res) => {
+    try {
+        const { username, password, fname, lname } = req.body;
+
+        if (!username || !password || !fname || !lname) {
+            return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+        }
+
+        // Check existing admin username
+        const [existing] = await pool.execute(
+            'SELECT admin_id FROM admin WHERE admin_username = ?',
+            [username]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ error: 'ชื่อนี้ถูกใช้แล้ว กรุณาใช้ชื่ออื่น' });
+        }
+
+        const hash = await bcrypt.hash(password, 10);
+
+        await pool.execute(
+            'INSERT INTO admin (admin_username, admin_password, admin_fname, admin_lname, admin_email) VALUES (?, ?, ?, ?, ?)',
+            [username, hash, fname, lname, `${username}@example.com`]
+        );
+
+        res.status(201).json({ message: 'สร้างแอดมินใหม่สำเร็จ' });
+    } catch (error) {
+        console.error('Admin register error:', error);
+        res.status(500).json({ error: 'ไม่สามารถสร้างแอดมินใหม่ได้' });
     }
 });
 
@@ -1975,6 +2023,35 @@ app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
             'JOIN customer c ON o.customer_id = c.customer_id\n' +
             'ORDER BY o.order_date DESC'
         );
+        
+        // ดึงข้อมูล installment_payments สำหรับออเดอร์ที่ผ่อนชำระ
+        if (orders.length > 0) {
+            const orderIds = orders.map((order) => order.order_id);
+            const placeholders = orderIds.map(() => '?').join(',');
+            const [installmentRows] = await pool.execute(
+                `SELECT * FROM installment_payments WHERE order_id IN (${placeholders}) ORDER BY order_id, installment_number`,
+                orderIds
+            );
+            
+            const installmentMap = installmentRows.reduce((acc, row) => {
+                const existing = acc.get(row.order_id) || [];
+                existing.push({
+                    installment_id: row.installment_id,
+                    installment_number: row.installment_number,
+                    installment_amount: Number(row.installment_amount) || 0,
+                    payment_due_date: row.payment_due_date,
+                    payment_status: row.payment_status,
+                    payment_date: row.payment_date
+                });
+                acc.set(row.order_id, existing);
+                return acc;
+            }, new Map());
+            
+            orders.forEach((order) => {
+                order.installments = installmentMap.get(order.order_id) || [];
+            });
+        }
+        
         res.json(orders);
     } catch (error) {
         console.error('Get orders error:', error);
@@ -2369,7 +2446,7 @@ app.put('/api/orders/cancel/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
-        if (order.order_status === 'approved' || order.order_status === 'awaiting_payment') {
+        if (order.order_status === 'approved' || order.order_status === 'awaiting_payment' || order.order_status === 'waiting_for_delivery') {
             return res.status(400).json({ error: 'คำสั่งซื้อนี้ได้รับการอนุมัติแล้ว ไม่สามารถยกเลิกได้' });
         }
 
@@ -2572,10 +2649,10 @@ app.put('/api/orders/approve/:id', authenticateToken, isAdmin, async (req, res) 
         const normalizedMethod = (order.payment_method || '').toLowerCase();
         const isInstallmentMethod = normalizedMethod.includes('install');
         
-        // อัปเดต order_status เป็น approved
+        // อัปเดต order_status เป็น waiting_for_delivery (รอจัดส่ง)
         await connection.execute(
             'UPDATE `order` SET order_status = ? WHERE order_id = ?',
-            ['approved', orderId]
+            ['waiting_for_delivery', orderId]
         );
 
         // ถ้าเป็น order แบบผ่อนชำระ ให้อัปเดต installment_payments (อัปเดต due_date เท่านั้น ไม่ตั้งเป็นชำระแล้ว)
@@ -2828,7 +2905,7 @@ app.put('/api/orders/reject/:id', authenticateToken, isAdmin, async (req, res) =
 
 // ==================== START SERVER ====================
 
-const PORT = Number(process.env.PORT) || 7100;
+const PORT = Number(config.server?.port) || 7100;
 
 // Start server with error handling
 const startServer = async () => {

@@ -1,0 +1,28 @@
+{
+  "database": {
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "database": "sangsawang_furniture"
+  },
+  "jwt": {
+    "secret": "sangsawang-furniture-jwt-secret-key-change-in-production"
+  },
+  "server": {
+    "port": 7100
+  },
+  "smtp": {
+    "host": "",
+    "port": 587,
+    "user": "",
+    "password": "",
+    "secure": false,
+    "from": ""
+  },
+  "app": {
+    "baseUrl": "http://localhost:3001",
+    "emailVerificationTtlMinutes": 15,
+    "emailOtpLength": 6
+  }
+}
+
