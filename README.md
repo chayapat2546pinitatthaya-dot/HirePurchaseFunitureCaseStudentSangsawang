@@ -8,11 +8,14 @@
 - [ขั้นตอนการติดตั้ง](#-ขั้นตอนการติดตั้ง)
   - [Quick Start](#quick-start)
   - [ติดตั้งแบบละเอียด](#การติดตั้งแบบละเอียด)
+- [Production Deployment](#-production-deployment)
 - [ข้อมูลสำหรับทดสอบ](#-ข้อมูลสำหรับทดสอบ)
 - [เอกสารเพิ่มเติม](#-เอกสารเพิ่มเติม)
 - [เทคโนโลยีที่ใช้](#-เทคโนโลยีที่ใช้)
 - [API Endpoints](#-api-endpoints)
 - [Security Features](#-security-features)
+- [Testing](#-testing)
+- [Monitoring & Logging](#-monitoring--logging)
 - [Troubleshooting](#-troubleshooting)
 
 ---
@@ -74,6 +77,52 @@ npm run dev
 
 ---
 
+## 🚀 Production Deployment
+
+โปรเจกต์นี้พร้อมสำหรับการ deploy ขึ้น production server แล้ว!
+
+### Quick Deploy Guide
+
+1. **Build Frontend:**
+   ```bash
+   cd client && npm run build && cd ..
+   ```
+
+2. **ตั้งค่า Environment Variables:**
+   ```bash
+   cp .env.example .env
+   # แก้ไข .env ตาม production settings
+   ```
+
+3. **Start with PM2:**
+   ```bash
+   pm2 start ecosystem.config.js --env production
+   ```
+
+4. **ตั้งค่า Nginx:**
+   - ดูตัวอย่างใน `nginx.example.conf`
+   - แก้ไข domain และ paths
+   - รีโหลด Nginx
+
+### 📚 เอกสารเพิ่มเติม
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - คู่มือการ Deploy แบบละเอียด
+- **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** - Checklist ก่อน Deploy
+
+### Production Features
+
+- ✅ Environment Variables Support (.env)
+- ✅ Production Build Scripts
+- ✅ PM2 Process Management
+- ✅ Nginx Configuration Example
+- ✅ Security Headers
+- ✅ Static File Serving
+- ✅ Logging System
+- ✅ Health Check Endpoints
+- ✅ Graceful Shutdown
+
+---
+
 ### การติดตั้งแบบละเอียด
 
 ### 1. ติดตั้ง Prerequisites
@@ -123,47 +172,63 @@ node database/scripts/fix_database_types.js
 
 ### 5. ตั้งค่า Configuration
 
-1. คัดลอกไฟล์ตัวอย่าง (ถ้ายังไม่มี `config.json`):
+โปรเจกต์นี้รองรับการตั้งค่าผ่าน **Environment Variables (.env)** หรือ **config.json**
+
+#### วิธีที่ 1: ใช้ Environment Variables (แนะนำสำหรับ Production)
+
+1. คัดลอกไฟล์ตัวอย่าง:
+```bash
+copy .env.example .env
+```
+
+2. แก้ไขไฟล์ `.env` ตามความต้องการของคุณ:
+
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=sangsawang_furniture
+
+# JWT Secret Key
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Server Configuration
+SERVER_PORT=7100
+NODE_ENV=development
+
+# SMTP Configuration
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_SECURE=false
+SMTP_FROM=
+
+# Application Configuration
+APP_BASE_URL=http://localhost:3001
+EMAIL_VERIFICATION_TTL_MINUTES=15
+EMAIL_OTP_LENGTH=6
+
+# Logging Configuration
+LOG_LEVEL=info
+LOG_FILE=logs/app.log
+```
+
+#### วิธีที่ 2: ใช้ config.json (เหมาะสำหรับการศึกษา)
+
+1. คัดลอกไฟล์ตัวอย่าง:
 ```bash
 copy config.example.json config.json
 ```
 
-2. แก้ไขไฟล์ `config.json` ใน root directory ตามความต้องการของคุณ:
-
-```json
-{
-  "database": {
-    "host": "localhost",
-    "user": "root",
-    "password": "your_password",
-    "database": "sangsawang_furniture"
-  },
-  "jwt": {
-    "secret": "your-super-secret-jwt-key-change-this-in-production"
-  },
-  "server": {
-    "port": 7100
-  },
-  "smtp": {
-    "host": "",
-    "port": 587,
-    "user": "",
-    "password": "",
-    "secure": false,
-    "from": ""
-  },
-  "app": {
-    "baseUrl": "http://localhost:3001",
-    "emailVerificationTtlMinutes": 15,
-    "emailOtpLength": 6
-  }
-}
-```
+2. แก้ไขไฟล์ `config.json` ตามความต้องการของคุณ (ดูตัวอย่างในไฟล์ `config.example.json`)
 
 > 💡 **หมายเหตุ:** 
-> - ไฟล์ `config.json` สามารถอัพขึ้น GitHub ได้โดยไม่ต้องซ่อน (เหมาะสำหรับการศึกษา)
-> - สำหรับการศึกษา: ค่า default ที่มีอยู่ใช้ได้เลย
-> - สำหรับ Production จริง: ควรเปลี่ยน JWT secret และรหัสผ่านฐานข้อมูลให้ปลอดภัย
+> - Environment Variables (.env) จะมีลำดับความสำคัญสูงกว่า config.json
+> - ไฟล์ `.env` จะถูก ignore โดย Git (ปลอดภัยกว่า)
+> - สำหรับการศึกษา: ใช้ config.json ได้เลย
+> - สำหรับ Production: แนะนำให้ใช้ .env เพื่อความปลอดภัย
 
 ### 6. รันโปรเจกต์
 
@@ -263,6 +328,7 @@ sangsawang-furniture/
 - Bootstrap 5
 - React Bootstrap
 - Axios
+- React Testing Library (สำหรับ testing)
 
 ### Backend
 - Node.js
@@ -272,15 +338,23 @@ sangsawang-furniture/
 - JSON Web Token (JWT)
 - Nodemailer (ส่งอีเมล)
 - Multer (อัปโหลดไฟล์)
+- dotenv (จัดการ environment variables)
+- Jest & Supertest (สำหรับ testing)
 
 ### Database
 - MySQL
 
+### Development Tools
+- Nodemon (auto-reload)
+- Concurrently (รัน frontend และ backend พร้อมกัน)
+- Jest (testing framework)
+
 ## 📝 API Endpoints
 
 ### System
-- `GET /api/health` - Health check endpoint
+- `GET /api/health` - Health check endpoint (แสดงสถานะ server, database, uptime)
 - `GET /api/test-db` - Test database connection
+- `GET /api/metrics` - Metrics endpoint (Admin only, แสดงสถิติระบบ)
 
 ### Customer
 - `POST /api/customer/register` - สมัครสมาชิก
@@ -347,24 +421,90 @@ sangsawang-furniture/
 - **Navbar**: Navigation bar พร้อมเมนูและตะกร้าสินค้า
 - **Footer**: Footer พร้อมข้อมูลติดต่อและลิงก์โซเชียลมีเดีย
 
+## 🧪 Testing
+
+โปรเจกต์นี้มีระบบทดสอบครบถ้วน:
+
+### Backend Tests
+```bash
+# รัน tests ทั้งหมด
+npm test
+
+# รัน tests แบบ watch mode
+npm run test:watch
+
+# รัน tests พร้อม coverage report
+npm run test:coverage
+```
+
+### Frontend Tests
+```bash
+cd client
+npm test
+```
+
+### Test Structure
+- `__tests__/` - Backend unit tests และ integration tests
+- `client/src/__tests__/` - Frontend component tests
+- Coverage reports จะถูกสร้างในโฟลเดอร์ `coverage/`
+
+## 📊 Monitoring & Logging
+
+### Logging System
+- Logs จะถูกบันทึกในไฟล์ `logs/app.log`
+- รองรับ log levels: `error`, `warn`, `info`, `debug`
+- ตั้งค่า log level ได้ผ่าน `LOG_LEVEL` ใน `.env`
+
+### Health Check
+```bash
+# ตรวจสอบสถานะระบบ
+curl http://localhost:7100/api/health
+```
+
+### Metrics Endpoint
+```bash
+# ดูสถิติระบบ (ต้อง login เป็น Admin)
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" http://localhost:7100/api/metrics
+```
+
 ## 🐛 Troubleshooting
 
 ### ปัญหา: ไม่สามารถเชื่อมต่อฐานข้อมูลได้
 - ตรวจสอบว่า MySQL กำลังรันอยู่
-- ตรวจสอบ database configuration ในไฟล์ config.json
+- ตรวจสอบ database configuration ในไฟล์ `.env` หรือ `config.json`
+- ตรวจสอบ logs ใน `logs/app.log`
 
 ### ปัญหา: Port 7100 ถูกใช้แล้ว
-- เปลี่ยน port ในไฟล์ config.json (ในส่วน server.port)
+- เปลี่ยน port ในไฟล์ `.env` (`SERVER_PORT`) หรือ `config.json`
 
 ### ปัญหา: npm install error
 - ลบ node_modules และ package-lock.json
 - รัน `npm install` ใหม่
 
+### ปัญหา: Tests ไม่ผ่าน
+- ตรวจสอบว่า database ถูกตั้งค่าถูกต้อง
+- สำหรับ integration tests ต้องมี test database
+
 ## 📚 เอกสารเพิ่มเติม
 
-> 📝 **หมายเหตุ:** เอกสารเพิ่มเติมจะถูกเพิ่มในอนาคต
->
-> สำหรับตอนนี้ สามารถดูข้อมูลทั้งหมดได้ใน README.md นี้
+### Environment Variables
+โปรเจกต์รองรับการตั้งค่าผ่าน environment variables (.env) หรือ config.json
+- `.env.example` - ตัวอย่างไฟล์ configuration
+- `src/config.js` - โค้ดที่จัดการการโหลด configuration
+
+### Logging
+- Logs ถูกบันทึกใน `logs/app.log`
+- ตั้งค่า log level ได้ผ่าน `LOG_LEVEL` environment variable
+- รองรับ levels: `error`, `warn`, `info`, `debug`
+
+### Testing
+- Backend tests: `npm test`
+- Frontend tests: `cd client && npm test`
+- Coverage reports: `npm run test:coverage`
+
+### Monitoring
+- Health check: `GET /api/health`
+- Metrics: `GET /api/metrics` (Admin only)
 
 ## 📄 License
 

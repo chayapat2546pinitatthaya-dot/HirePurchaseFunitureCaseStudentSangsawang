@@ -9,29 +9,73 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-// Load config.json from project root
-let config = {};
-try {
-    const configPath = path.join(__dirname, '..', 'config.json');
-    const configFile = fs.readFileSync(configPath, 'utf8');
-    config = JSON.parse(configFile);
-} catch (error) {
-    console.warn('Warning: Could not load config.json, using default values:', error.message);
-    config = {
-        database: { host: 'localhost', user: 'root', password: '', database: 'sangsawang_furniture' },
-        jwt: { secret: 'sangsawang-furniture-jwt-secret-key-change-in-production' },
-        server: { port: 7100 },
-        smtp: { host: '', port: 587, user: '', password: '', secure: false, from: '' },
-        app: { baseUrl: 'http://localhost:3001', emailVerificationTtlMinutes: 15, emailOtpLength: 6 }
-    };
-}
+// Load configuration (supports .env and config.json)
+const config = require('./config');
+const { createLogger } = require('./utils/logger');
+
+// Initialize logger
+const logger = createLogger({
+  level: config.logging.level,
+  file: config.logging.file
+});
 
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || config.app?.baseUrl || '*',
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Security headers (production only)
+if (config.server.env === 'production') {
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+  });
+}
+
+// Serve static files from React build (production only)
+if (config.server.env === 'production') {
+  const buildPath = path.join(__dirname, '..', 'client', 'build');
+  if (fs.existsSync(buildPath)) {
+    app.use(express.static(buildPath));
+    logger.info('Serving static files from React build');
+  }
+}
+
+// Health check endpoint
+app.get('/api/health', async (req, res) => {
+    const health = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: config.server.env,
+        database: 'unknown'
+    };
+
+    try {
+        if (pool) {
+            const connection = await pool.getConnection();
+            await connection.query('SELECT 1 as test');
+            connection.release();
+            health.database = 'connected';
+        } else {
+            health.database = 'not_initialized';
+        }
+    } catch (error) {
+        health.database = 'disconnected';
+        health.status = 'degraded';
+    }
+
+    const statusCode = health.status === 'ok' ? 200 : 503;
+    res.status(statusCode).json(health);
+});
 
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {
@@ -39,13 +83,14 @@ app.get('/api/test-db', async (req, res) => {
         const connection = await pool.getConnection();
         const [rows] = await connection.query('SELECT 1 as test');
         connection.release();
+        logger.info('Database connection test successful');
         res.json({
             success: true,
             message: 'Database connection successful',
             data: rows[0]
         });
     } catch (error) {
-        console.error('Database connection test failed:', error);
+        logger.error('Database connection test failed', error);
         res.status(500).json({
             success: false,
             message: 'Database connection failed',
@@ -56,6 +101,53 @@ app.get('/api/test-db', async (req, res) => {
                 message: error.message
             }
         });
+    }
+});
+
+// Metrics endpoint (for monitoring)
+app.get('/api/metrics', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const metrics = {
+            timestamp: new Date().toISOString(),
+            server: {
+                uptime: process.uptime(),
+                memory: process.memoryUsage(),
+                nodeVersion: process.version,
+                platform: process.platform
+            },
+            database: {},
+            application: {}
+        };
+
+        // Database metrics
+        if (pool) {
+            try {
+                const [orders] = await pool.execute('SELECT COUNT(*) as count FROM `order`');
+                const [customers] = await pool.execute('SELECT COUNT(*) as count FROM customer');
+                const [products] = await pool.execute('SELECT COUNT(*) as count FROM product');
+                const [pendingOrders] = await pool.execute(
+                    "SELECT COUNT(*) as count FROM `order` WHERE order_status = 'pending'"
+                );
+
+                metrics.database = {
+                    connected: true,
+                    orders: orders[0]?.count || 0,
+                    customers: customers[0]?.count || 0,
+                    products: products[0]?.count || 0,
+                    pendingOrders: pendingOrders[0]?.count || 0
+                };
+            } catch (error) {
+                logger.error('Failed to fetch database metrics', { message: error.message });
+                metrics.database = { connected: false, error: error.message };
+            }
+        } else {
+            metrics.database = { connected: false };
+        }
+
+        res.json(metrics);
+    } catch (error) {
+        logger.error('Failed to fetch metrics', error);
+        res.status(500).json({ error: 'Failed to fetch metrics' });
     }
 });
 
@@ -160,20 +252,17 @@ const initDbConnection = async () => {
 
     // Test connection
     const connection = await pool.getConnection();
-    console.log('Database connection successful');
+    logger.info('Database connection successful');
     connection.release();
     return true;
   } catch (error) {
-    console.error('Database connection failed:', error.message);
-    console.error('Error details:', {
+    logger.error('Database connection failed', {
+      message: error.message,
       code: error.code,
       errno: error.errno,
       sqlMessage: error.sqlMessage
     });
-    console.error('Please check:');
-    console.error('1. MySQL/XAMPP is running');
-    console.error('2. Database "sangsawang_furniture" exists');
-    console.error('3. Database credentials in config.json file are correct');
+    logger.warn('Please check: 1. MySQL/XAMPP is running, 2. Database exists, 3. Credentials are correct');
     return false;
   }
 };
@@ -182,14 +271,11 @@ const initDbConnection = async () => {
 const testDatabaseConnection = async () => {
     try {
         const [rows] = await pool.execute('SELECT 1 as test');
-        console.log('Database connection test successful');
+        logger.info('Database connection test successful');
         return true;
     } catch (error) {
-        console.error('Database connection test failed:', error.message);
-        console.error('Please check:');
-        console.error('1. MySQL/XAMPP is running');
-        console.error('2. Database "sangsawang_furniture" exists');
-        console.error('3. Database credentials in config.json file are correct');
+        logger.error('Database connection test failed', { message: error.message });
+        logger.warn('Please check database configuration');
         return false;
     }
 };
@@ -197,10 +283,10 @@ const testDatabaseConnection = async () => {
 const ensureCustomerAltAddressesColumn = async () => {
     try {
         await pool.execute('ALTER TABLE customer ADD COLUMN customer_alt_addresses TEXT NULL');
-        console.log('Added customer_alt_addresses column');
+        logger.info('Added customer_alt_addresses column');
     } catch (error) {
         if (error.code !== 'ER_DUP_FIELDNAME') {
-            console.warn('Failed to ensure customer_alt_addresses column:', error.message);
+            logger.warn('Failed to ensure customer_alt_addresses column', { message: error.message });
         }
     }
 };
@@ -210,10 +296,10 @@ const ensureCustomerEmailVerificationColumns = async () => {
         await pool.execute(
             'ALTER TABLE customer ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0'
         );
-        console.log('Added email_verified column');
+        logger.info('Added email_verified column');
     } catch (error) {
         if (error.code !== 'ER_DUP_FIELDNAME') {
-            console.warn('Failed to add email_verified column:', error.message);
+            logger.warn('Failed to add email_verified column', { message: error.message });
         }
     }
 
@@ -2916,15 +3002,62 @@ const startServer = async () => {
     console.warn('Please ensure MySQL/XAMPP is running and database is configured correctly.');
   }
 
+  // Serve React app for all non-API routes (production only)
+  if (config.server.env === 'production') {
+    const buildPath = path.join(__dirname, '..', 'client', 'build');
+    if (fs.existsSync(buildPath)) {
+      app.get('*', (req, res) => {
+        // Don't serve React app for API routes
+        if (req.path.startsWith('/api')) {
+          return res.status(404).json({ error: 'API endpoint not found' });
+        }
+        res.sendFile(path.join(buildPath, 'index.html'));
+      });
+      logger.info('React app will be served from build directory');
+    } else {
+      logger.warn('React build directory not found. Run "npm run build" first.');
+    }
+  }
+
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`API available at http://localhost:${PORT}/api`);
+    logger.info(`Server is running on port ${PORT}`);
+    logger.info(`API available at http://localhost:${PORT}/api`);
+    logger.info(`Environment: ${config.server.env}`);
+    logger.info(`Health check: http://localhost:${PORT}/api/health`);
+    if (config.server.env === 'production') {
+      logger.info('Production mode: Serving React app from build directory');
+    }
   });
 };
 
 // Start the server
 startServer().catch(err => {
-  console.error('Failed to start server:', err);
+  logger.error('Failed to start server', err);
   process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM signal received: closing HTTP server');
+  if (pool) {
+    pool.end(() => {
+      logger.info('Database pool closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+});
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT signal received: closing HTTP server');
+  if (pool) {
+    pool.end(() => {
+      logger.info('Database pool closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
 });
 
