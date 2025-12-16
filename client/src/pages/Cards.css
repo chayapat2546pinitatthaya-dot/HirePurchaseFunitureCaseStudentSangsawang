@@ -115,7 +115,7 @@
 }
 
 .cards-status-badge--pending {
-  background: linear-gradient(135deg, #facc58 0%, #f5a623 100%) !important;
+  background: #000 !important;
   color: #ffffff !important;
   box-shadow: 0 16px 36px rgba(240, 163, 51, 0.26);
   border-color: transparent !important;

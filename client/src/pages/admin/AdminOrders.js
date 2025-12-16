@@ -412,13 +412,13 @@ export default function AdminOrders({
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { variant: 'warning', text: 'รออนุมัติ', color: '#ffd84d', textColor: '#222' },
-      awaiting_payment: { variant: 'info', text: 'รอชำระเงิน', color: '#00BFFF', textColor: '#fff' },
-      approved: { variant: 'success', text: 'อนุมัติแล้ว', color: '#32CD32', textColor: '#fff' },
-      waiting_for_delivery: { variant: 'primary', text: 'รอจัดส่ง', color: '#9370DB', textColor: '#fff' },
-      completed: { variant: 'success', text: 'ส่งมอบสำเร็จ', color: '#1DB954', textColor: '#fff' },
+      pending: { variant: 'warning', text: 'รออนุมัติ', color: '#000000', textColor: '#fff' },
+      awaiting_payment: { variant: 'info', text: 'รอชำระเงิน', color: '#000000', textColor: '#fff' },
+      approved: { variant: 'success', text: 'อนุมัติแล้ว', color: '#000000', textColor: '#fff' },
+      waiting_for_delivery: { variant: 'primary', text: 'รอจัดส่ง', color: '#000000', textColor: '#fff' },
+      completed: { variant: 'success', text: 'ส่งมอบสำเร็จ', color: '#000000', textColor: '#fff' },
       cancelled: { variant: 'danger', text: 'ยกเลิกโดยผู้ดูแล', color: '#000000', textColor: '#fff' },
-      cancelled_by_customer: { variant: 'danger', text: 'ลูกค้ายกเลิก', color: '#FF6B6B', textColor: '#fff' }
+      cancelled_by_customer: { variant: 'danger', text: 'ลูกค้ายกเลิก', color: '#000000', textColor: '#fff' }
     };
     const config = statusConfig[status] || { variant: 'secondary', text: status, color: '#666', textColor: '#fff' };
     return (

@@ -81,38 +81,38 @@
 }
 
 .orders-status-badge--pending {
-  background: linear-gradient(135deg, #facc58 0%, #f5a623 100%) !important;
+  background: #000 !important;
   color: #fff !important;
-  border-color: transparent !important;
-  box-shadow: 0 16px 36px rgba(240, 163, 51, 0.24);
+  border-color: #000 !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
 }
 
 .orders-status-badge--awaiting {
-  background: #1d3f8d !important;
+  background: #000 !important;
   color: #fff !important;
-  border-color: #183679 !important;
-  box-shadow: 0 14px 32px rgba(29, 63, 141, 0.26);
+  border-color: #000 !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.26);
 }
 
 .orders-status-badge--shipping {
-  background: linear-gradient(135deg, #4cc0ff 0%, #1f9bff 100%) !important;
+  background: #000 !important;
   color: #fff !important;
-  border-color: rgba(31, 155, 255, 0.65) !important;
-  box-shadow: 0 16px 32px rgba(31, 155, 255, 0.26);
+  border-color: #000 !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.26);
 }
 
 .orders-status-badge--completed {
-  background: linear-gradient(135deg, #52c234 0%, #219f45 100%) !important;
+  background: #000 !important;
   color: #fff !important;
-  border-color: rgba(33, 159, 69, 0.62) !important;
-  box-shadow: 0 18px 36px rgba(33, 159, 69, 0.24);
+  border-color: #000 !important;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
 }
 
 .orders-status-badge--cancelled {
-  background: linear-gradient(135deg, #d93d54 0%, #ff6b6b 100%) !important;
+  background: #000 !important;
   color: #fff !important;
-  border-color: transparent !important;
-  box-shadow: 0 18px 40px rgba(217, 61, 84, 0.28);
+  border-color: #000 !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
 }
 
 .orders-actions {

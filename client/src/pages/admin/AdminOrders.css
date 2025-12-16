@@ -503,7 +503,7 @@
 
 /* Status-specific border colors */
 .admin-order-card[data-status="pending"]::before {
-  background: #FFD700;
+  background: #000;
 }
 
 .admin-order-card[data-status="awaiting_payment"]::before {

@@ -104,52 +104,6 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
-// Metrics endpoint (for monitoring)
-app.get('/api/metrics', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const metrics = {
-            timestamp: new Date().toISOString(),
-            server: {
-                uptime: process.uptime(),
-                memory: process.memoryUsage(),
-                nodeVersion: process.version,
-                platform: process.platform
-            },
-            database: {},
-            application: {}
-        };
-
-        // Database metrics
-        if (pool) {
-            try {
-                const [orders] = await pool.execute('SELECT COUNT(*) as count FROM `order`');
-                const [customers] = await pool.execute('SELECT COUNT(*) as count FROM customer');
-                const [products] = await pool.execute('SELECT COUNT(*) as count FROM product');
-                const [pendingOrders] = await pool.execute(
-                    "SELECT COUNT(*) as count FROM `order` WHERE order_status = 'pending'"
-                );
-
-                metrics.database = {
-                    connected: true,
-                    orders: orders[0]?.count || 0,
-                    customers: customers[0]?.count || 0,
-                    products: products[0]?.count || 0,
-                    pendingOrders: pendingOrders[0]?.count || 0
-                };
-            } catch (error) {
-                logger.error('Failed to fetch database metrics', { message: error.message });
-                metrics.database = { connected: false, error: error.message };
-            }
-        } else {
-            metrics.database = { connected: false };
-        }
-
-        res.json(metrics);
-    } catch (error) {
-        logger.error('Failed to fetch metrics', error);
-        res.status(500).json({ error: 'Failed to fetch metrics' });
-    }
-});
 
 
 
@@ -161,7 +115,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // กำหนดโฟลเดอร์ที่จะเก็บไฟล์
         // เก็บในโฟลเดอร์ images ก่อน แล้วค่อยย้ายไปยัง category folder ตามต้องการ
-        const uploadDir = path.join(__dirname, 'images');
+        const uploadDir = path.join(__dirname, '..', 'images');
         
         // สร้างโฟลเดอร์ถ้ายังไม่มี
         if (!fs.existsSync(uploadDir)) {
@@ -200,8 +154,11 @@ const upload = multer({
 // Serve static files from images folder
 // หมายเหตุ: server.js อยู่ในโฟลเดอร์ src ดังนั้นต้องถอยขึ้นไปหนึ่งระดับถึงจะเจอโฟลเดอร์ images จริง
 // รูปภาพจะถูกดึงจากโฟลเดอร์ images โดยตรงผ่าน static file serving (ไม่ผ่าน API endpoint)
-// Browser จะ encode URL ที่มีภาษาไทยอัตโนมัติ และ Express จะ decode ให้อัตโนมัติ
-app.use('/images', express.static(path.join(__dirname, '..', 'images'), {
+// Browser จะ encode URL ที่มีภาษาไทยอัตโนมัติ - ต้อง decode ก่อน serve
+app.use('/images', (req, res, next) => {
+    req.url = decodeURIComponent(req.url);
+    next();
+}, express.static(path.join(__dirname, '..', 'images'), {
     setHeaders: (res, filePath) => {
         // ตั้งค่า headers สำหรับรูปภาพ
         if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
@@ -1757,6 +1714,53 @@ const isAdmin = (req, res, next) => {
         res.status(403).json({ error: 'Access denied. Admin only.' });
     }
 };
+
+// Metrics endpoint (for monitoring)
+app.get('/api/metrics', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const metrics = {
+            timestamp: new Date().toISOString(),
+            server: {
+                uptime: process.uptime(),
+                memory: process.memoryUsage(),
+                nodeVersion: process.version,
+                platform: process.platform
+            },
+            database: {},
+            application: {}
+        };
+
+        // Database metrics
+        if (pool) {
+            try {
+                const [orders] = await pool.execute('SELECT COUNT(*) as count FROM `order`');
+                const [customers] = await pool.execute('SELECT COUNT(*) as count FROM customer');
+                const [products] = await pool.execute('SELECT COUNT(*) as count FROM product');
+                const [pendingOrders] = await pool.execute(
+                    "SELECT COUNT(*) as count FROM `order` WHERE order_status = 'pending'"
+                );
+
+                metrics.database = {
+                    connected: true,
+                    orders: orders[0]?.count || 0,
+                    customers: customers[0]?.count || 0,
+                    products: products[0]?.count || 0,
+                    pendingOrders: pendingOrders[0]?.count || 0
+                };
+            } catch (error) {
+                logger.error('Failed to fetch database metrics', { message: error.message });
+                metrics.database = { connected: false, error: error.message };
+            }
+        } else {
+            metrics.database = { connected: false };
+        }
+
+        res.json(metrics);
+    } catch (error) {
+        logger.error('Failed to fetch metrics', error);
+        res.status(500).json({ error: 'Failed to fetch metrics' });
+    }
+});
 
 // Admin notification summary (new orders, customers, payment confirmations)
 app.get('/api/admin/notification-summary', authenticateToken, isAdmin, async (req, res) => {

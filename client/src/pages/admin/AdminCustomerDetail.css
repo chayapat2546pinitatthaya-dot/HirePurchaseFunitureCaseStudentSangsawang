@@ -430,10 +430,10 @@
 }
 
 .detail-status-pill.is-active {
-  background: linear-gradient(135deg, #facc58 0%, #f5a623 100%);
+  background: #000;
   color: #fff;
-  border-color: transparent;
-  box-shadow: 0 12px 24px rgba(240, 163, 51, 0.28);
+  border-color: #000;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
 }
 
 .detail-orders-card {
