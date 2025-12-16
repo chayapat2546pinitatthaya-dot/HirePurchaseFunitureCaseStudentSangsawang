@@ -8,8 +8,8 @@
     "server": "nodemon src/server.js",
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
-    "start": "node src/server.js",
-    "start:prod": "NODE_ENV=production node src/server.js",
+    "start": "NODE_ENV=production node src/server.js",
+    "start:dev": "node src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
